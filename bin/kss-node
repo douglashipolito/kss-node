@@ -168,25 +168,27 @@ process.nextTick(function() {
 			sectionRoots.sort();
 			rootCount = sectionRoots.length;
 
-			// Now, group all of the sections by their root
-			// reference, and make a page for each.
-			for (i = 0; i < rootCount; i += 1) {
-				childSections = styleguide.section(sectionRoots[i]+'.*');
+			generateStylesheet(argv, function (styleKssExample) {
+				// Now, group all of the sections by their root
+				// reference, and make a page for each.
+				for (i = 0; i < rootCount; i += 1) {
+					childSections = styleguide.section(sectionRoots[i]+'.*');
 
-				generatePage(
-					styleguide, childSections,
-					sectionRoots[i], pages, sectionRoots
-				);
-			}
+					generatePage(
+						styleguide, childSections,
+						sectionRoots[i], pages, sectionRoots, styleKssExample
+					);
+				}
+			});
 
 			generateIndex(styleguide, childSections, pages, sectionRoots);
-			generateStylesheet(argv);
+			
 		});
 	});
 });
 
 // Compile LESS/Stylus/CSS files into a single "style.css" if required
-generateStylesheet = function(argv) {
+generateStylesheet = function(argv, onGenerated) {
 	var compilers = preCompiler.compilers,
 		files
 
@@ -234,14 +236,17 @@ generateStylesheet = function(argv) {
 		});
 	}, function (err, combined) {
 		if (err) throw err
-		saveStylesheet(combined)
+		saveStylesheet(combined, onGenerated)
 	});
 };
 
 // Used by generateStylesheet to minify and then
 // save its final buffer to a single CSS file.
-saveStylesheet = function(buffer) {
+saveStylesheet = function(buffer, onGenerated) {
 	buffer = cleanCss.process(buffer.toString());
+	
+	onGenerated(buffer);
+
 	fs.writeFileSync(
 		options.destinationDirectory + '/public/style.css',
 		buffer, 'utf8'
@@ -250,12 +255,13 @@ saveStylesheet = function(buffer) {
 
 // Renders the handlebars template for a section and saves it to a file.
 // Needs refactoring for clarity.
-generatePage = function(styleguide, sections, root, pages, sectionRoots) {
+generatePage = function(styleguide, sections, root, pages, sectionRoots, styleKssExample) {
 	console.log(
 		'...generating section '+root+' [',
 		styleguide.section(root) ? styleguide.section(root).header() : 'Unnamed',
 		']'
 	);
+	
 	fs.writeFileSync(options.destinationDirectory + '/section-'+root+'.html',
 		template({
 			styleguide: styleguide,
@@ -263,7 +269,8 @@ generatePage = function(styleguide, sections, root, pages, sectionRoots) {
 			rootNumber: root,
 			sectionRoots: sectionRoots,
 			overview: false,
-			argv: argv || {}
+			argv: argv || {},
+			styleKssExample : styleKssExample
 		})
 	);
 };
