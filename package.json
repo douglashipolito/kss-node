@@ -27,7 +27,9 @@
     "sass": "0.5.x",
     "optimist": "0.3.x",
     "clean-css": "0.3.x",
-    "async": "0.1.x"
+    "async": "0.1.x",
+    "ucss": "0.4.1-beta",
+    "cssom": "0.2.5"
   },
   "devDependencies": {
     "mocha": "0.14.x"
