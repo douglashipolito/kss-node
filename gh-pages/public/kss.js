@@ -84,7 +84,6 @@
       var dom = this.dom,
           height = dom.window.width() <= 768 ? 'auto' : Math.max(dom.window.height(), dom.kssMain.height());
 
-      dom.kssMain.height(height);    
       dom.kssNav.height(height);    
     };
 
