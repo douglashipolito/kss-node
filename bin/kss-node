@@ -13,8 +13,15 @@ var kss = require(__dirname + '/../lib/kss.js'),
 	less = require('less'),
 	path = require('path'),
 	fs = require('fs'),
+	ucss = require('ucss'),
+	cssom = require('cssom'),
+	cssKssPreview = '',
+	cssKssPreviewObj = {},
+
 	template, styleguide,
 	generatePage, generateStylesheet,
+	processCssKssPreview, removeUnusedCSS,
+
 	options = {
 		templateDirectory: __dirname + '/../lib/template',
 		sourceDirectory: __dirname + '/../demo',
@@ -168,7 +175,9 @@ process.nextTick(function() {
 			sectionRoots.sort();
 			rootCount = sectionRoots.length;
 
-			generateStylesheet(argv, function (styleKssExample) {
+			//Generate Stylesheet
+			generateStylesheet(argv, function () {
+				
 				// Now, group all of the sections by their root
 				// reference, and make a page for each.
 				for (i = 0; i < rootCount; i += 1) {
@@ -176,19 +185,18 @@ process.nextTick(function() {
 
 					generatePage(
 						styleguide, childSections,
-						sectionRoots[i], pages, sectionRoots, styleKssExample
+						sectionRoots[i], pages, sectionRoots
 					);
 				}
 			});
 
 			generateIndex(styleguide, childSections, pages, sectionRoots);
-			
 		});
 	});
 });
 
 // Compile LESS/Stylus/CSS files into a single "style.css" if required
-generateStylesheet = function(argv, onGenerated) {
+generateStylesheet = function(argv, onGenerate) {
 	var compilers = preCompiler.compilers,
 		files
 
@@ -207,7 +215,6 @@ generateStylesheet = function(argv, onGenerated) {
 
 	async.reduce(files, [], function (combined, group, next) {
 		if (!group) return next(null, combined)
-
 
 		async.map(group.files, function (filename, next) {
 			var type = group.type
@@ -236,16 +243,15 @@ generateStylesheet = function(argv, onGenerated) {
 		});
 	}, function (err, combined) {
 		if (err) throw err
-		saveStylesheet(combined, onGenerated)
+		saveStylesheet(combined);
+		onGenerate();
 	});
 };
 
 // Used by generateStylesheet to minify and then
 // save its final buffer to a single CSS file.
-saveStylesheet = function(buffer, onGenerated) {
-	buffer = cleanCss.process(buffer.toString());
-	
-	onGenerated(buffer);
+saveStylesheet = function(buffer) {
+	buffer = processCssKssPreview(buffer.toString());
 
 	fs.writeFileSync(
 		options.destinationDirectory + '/public/style.css',
@@ -253,26 +259,82 @@ saveStylesheet = function(buffer, onGenerated) {
 	);
 };
 
+//Process the pseudos classes and add classes to it
+//It replaces the process in the front-end, which has been made through KssStateGenerator function
+processCssKssPreview = function(css) {
+	var pseudos = /(\:hover|\:disabled|\:active|\:visited|\:focus)/g,
+			matchPseudo = null,
+			cssRuleSelector = '';
+
+	cssKssPreview = cleanCss.process(css);
+	cssKssPreviewObj = cssom.parse(cssKssPreview);
+
+	if(cssKssPreviewObj) {
+		cssKssPreviewObj.cssRules.forEach(function (cssRule) {
+			matchPseudo = cssRule.selectorText.match(pseudos);
+			
+			cssRuleSelector = cssRule.selectorText.replace(pseudos, '').split(',')[0];
+
+			if (matchPseudo) {
+
+				matchPseudo.forEach(function (selector, index) {
+					selector = selector.replace(/:/g, '');
+
+					matchPseudo[index] = cssRuleSelector + '.pseudo-class-' + selector + ' { ' + cssRule.style.cssText + ' }';
+				});
+
+      	cssKssPreviewObj.insertRule(matchPseudo.join(), cssKssPreviewObj.cssRules.length);
+      }
+		});
+
+		cssKssPreview = cleanCss.process(cssKssPreviewObj.toString());
+	}
+
+	return cssKssPreview;
+};
+
 // Renders the handlebars template for a section and saves it to a file.
 // Needs refactoring for clarity.
-generatePage = function(styleguide, sections, root, pages, sectionRoots, styleKssExample) {
+generatePage = function(styleguide, sections, root, pages, sectionRoots) {
+	var html = [], markup, modifiers;
+
 	console.log(
 		'...generating section '+root+' [',
 		styleguide.section(root) ? styleguide.section(root).header() : 'Unnamed',
 		']'
 	);
-	
-	fs.writeFileSync(options.destinationDirectory + '/section-'+root+'.html',
-		template({
-			styleguide: styleguide,
-			sections: jsonSections(sections),
-			rootNumber: root,
-			sectionRoots: sectionRoots,
-			overview: false,
-			argv: argv || {},
-			styleKssExample : styleKssExample
-		})
-	);
+
+	for (index in sections) {
+		markup = sections[index].markup();
+		modifiers = sections[index].modifiers();
+
+		if(markup) {
+			html.push('<html>' + markup  + '</html>');
+		}
+
+		if(modifiers) {
+			for (indexModifier in modifiers) {
+				if(modifiers[indexModifier].markup) {
+					html.push('<html>' + modifiers[indexModifier].markup()  + '</html>');
+				}
+			}
+		}
+	}
+
+	removeUnusedCSS(html, cssKssPreview, function(newCssString) {
+		fs.writeFileSync(options.destinationDirectory + '/section-'+root+'.html',
+			template({
+				styleguide: styleguide,
+				sections: jsonSections(sections),
+				allSections : sections,
+				rootNumber: root,
+				sectionRoots: sectionRoots,
+				overview: false,
+				argv: argv || {},
+				cssKssPreview : newCssString
+			})
+		);
+	});
 };
 
 // Equivalent to generatePage, however will take `styleguide.md` and render it
@@ -320,6 +382,47 @@ jsonModifiers = function(modifiers) {
 		};
 	});
 };
+
+// Remove unused css
+removeUnusedCSS = function(html, css, callback) {
+	ucss.analyze({ include : html }, [css], { timeout : 400 }, false, function(result) {
+			var cssRules = cssKssPreviewObj.cssRules,
+					newCssString = '',
+					newCssObject = {},
+					prevSelector = '',
+					cssObj = {},
+					posCss = {},
+					keyCss = '';
+
+	    for (selector in result.selectors) {
+	    	if(result.selectors[selector].matches_html) {
+	    		pos_css = result.selectors[selector].pos_css;
+          keyCss = Object.keys(pos_css)[0];
+
+	    		newCssObject[selector] = pos_css[keyCss];
+
+	    		if(prevSelector) {
+	    			if(newCssObject[prevSelector].join(',').indexOf(newCssObject[selector].join(',')) > -1) {
+	    				newCssObject[selector + ',' + prevSelector] = newCssObject[prevSelector];
+	    			}
+	    			
+	    		}
+
+	    		prevSelector = selector;
+	    	}
+	    }
+
+	    for (cssRule in cssRules) {
+				cssObj = cssRules[cssRule];
+
+				if(newCssObject[cssObj.selectorText]) {
+					newCssString += cssObj.cssText;
+				}
+	    }
+
+	    callback(newCssString);
+	});
+}
 
 /**
  * Equivalent to the {#if} block helper with multiple arguments.
