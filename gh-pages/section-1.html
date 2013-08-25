@@ -15,9 +15,11 @@
   <link href='http://fonts.googleapis.com/css?family=Droid+Serif' rel='stylesheet' type='text/css'>
 
   <link rel="stylesheet" href="public/kss.css">
-  <link rel="stylesheet" href="public/style.css">
-
+  <style type="text/kss-example" id="style-kss-example">
+    .button {-webkit-appearance: none; -moz-appearance: none; appearance: none; padding: 10px 20px; color: #fff; font-family: Helvetica,Arial,sans-serif; font-size: 16px; font-weight: 700; text-transform: lowercase; text-decoration: none; cursor: pointer; border-radius: 3px; background-color: #aaa; border: 1px solid #777; text-shadow: 0 2px 0 #919191; box-shadow: 0 3px 0 0 #5e5e5e,inset 0 1px 3px rgba(255,255,255,.4); background-image: -webkit-linear-gradient(top,rgba(255,255,255,.125) 0,rgba(0,0,0,.125) 100%);}.button:visited,.button:hover,.button:active {color: #fff;}.button:hover {background-color: #bebebe; border: 1px solid #777; text-shadow: 0 2px 0 #a5a5a5; box-shadow: 0 3px 0 0 #727272,inset 0 1px 3px rgba(255,255,255,.4); background-image: -webkit-linear-gradient(top,rgba(255,255,255,.125) 0,rgba(0,0,0,.125) 100%);}.button:active {position: relative; top: 3px; box-shadow: none !important;}.button.primary {background-color: #5c4; border: 1px solid #318624; text-shadow: 0 2px 0 #3fae2f; box-shadow: 0 3px 0 0 #225e19,inset 0 1px 3px rgba(255,255,255,.4); background-image: -webkit-linear-gradient(top,rgba(255,255,255,.125) 0,rgba(0,0,0,.125) 100%);}.button:disabled {background-color: #ddd; border: 1px solid #aaa; text-shadow: 0 2px 0 #c4c4c4; box-shadow: 0 3px 0 0 #919191,inset 0 1px 3px rgba(255,255,255,.4); background-image: -webkit-linear-gradient(top,rgba(255,255,255,.125) 0,rgba(0,0,0,.125) 100%); cursor: default;}.button.remove {background-color: #c54; border: 1px solid #863124; text-shadow: 0 2px 0 #ae3f2f; box-shadow: 0 3px 0 0 #5e2219,inset 0 1px 3px rgba(255,255,255,.4); background-image: -webkit-linear-gradient(top,rgba(255,255,255,.125) 0,rgba(0,0,0,.125) 100%);}.button.pseudo-class-hover {background-color: #bebebe; border: 1px solid #777; text-shadow: 0 2px 0 #a5a5a5; box-shadow: 0 3px 0 0 #727272,inset 0 1px 3px rgba(255,255,255,.4); background-image: -webkit-linear-gradient(top,rgba(255,255,255,.125) 0,rgba(0,0,0,.125) 100%);}.button.pseudo-class-active {position: relative; top: 3px; box-shadow: none !important;}.button.pseudo-class-disabled {background-color: #ddd; border: 1px solid #aaa; text-shadow: 0 2px 0 #c4c4c4; box-shadow: 0 3px 0 0 #919191,inset 0 1px 3px rgba(255,255,255,.4); background-image: -webkit-linear-gradient(top,rgba(255,255,255,.125) 0,rgba(0,0,0,.125) 100%); cursor: default;}html,body{margin:0;padding:0;overflow:hidden;}
+  </style>
 </head>
+
 <body><div id="kss-wrapper">
   <div id="kss-nav">
     <header id="kss-header">
@@ -31,7 +33,7 @@
         
           <li><a href="section-2.html">2.0: Forms</a></li>
         
-      </nav></ul>
+      </ul></nav>
     </aside>
   </div>
   <div role="main" id="kss-main">
@@ -65,9 +67,13 @@ So far this just includes buttons. </p>
                     <td class="kss-mod-name"></td>
                   </tr>
                   <tr class="kss-mod-example">
-                    <td colspan="2"><a href="#" class="button {$modifiers}">Link Button</a>
+                    <td colspan="2" data-name="default-styling">
+                      <div class="kss-mod-example-content">
+                        <a href="#" class="button {$modifiers}">Link Button</a>
 <button class="button {$modifiers}">Button Element</button>
-<input type="button" class="button {$modifiers}" value="input[type='button']"/></td>
+<input type="button" class="button {$modifiers}" value="input[type='button']"/>
+                      </div>
+                    </td>
                   </tr>
                 
                   <tr class="kss-mod-desc-group">
@@ -76,9 +82,13 @@ So far this just includes buttons. </p>
                     <td class="kss-mod-name"><p>.primary</p></td>
                   </tr>
                   <tr class="kss-mod-example">
-                    <td colspan="2"><a href="#" class="button primary">Link Button</a>
+                    <td colspan="2" data-name=".primary">
+                      <div class="kss-mod-example-content">
+                        <a href="#" class="button primary">Link Button</a>
 <button class="button primary">Button Element</button>
-<input type="button" class="button primary" value="input[type='button']"/></td>
+<input type="button" class="button primary" value="input[type='button']"/>
+                      </div>
+                    </td>
                   </tr>
                 
                   <tr class="kss-mod-desc-group">
@@ -87,9 +97,13 @@ So far this just includes buttons. </p>
                     <td class="kss-mod-name"><p>.remove</p></td>
                   </tr>
                   <tr class="kss-mod-example">
-                    <td colspan="2"><a href="#" class="button remove">Link Button</a>
+                    <td colspan="2" data-name=".remove">
+                      <div class="kss-mod-example-content">
+                        <a href="#" class="button remove">Link Button</a>
 <button class="button remove">Button Element</button>
-<input type="button" class="button remove" value="input[type='button']"/></td>
+<input type="button" class="button remove" value="input[type='button']"/>
+                      </div>
+                    </td>
                   </tr>
                 
                   <tr class="kss-mod-desc-group">
@@ -98,9 +112,13 @@ So far this just includes buttons. </p>
                     <td class="kss-mod-name"><p>:hover</p></td>
                   </tr>
                   <tr class="kss-mod-example">
-                    <td colspan="2"><a href="#" class="button pseudo-class-hover">Link Button</a>
+                    <td colspan="2" data-name=".pseudo-class-hover">
+                      <div class="kss-mod-example-content">
+                        <a href="#" class="button pseudo-class-hover">Link Button</a>
 <button class="button pseudo-class-hover">Button Element</button>
-<input type="button" class="button pseudo-class-hover" value="input[type='button']"/></td>
+<input type="button" class="button pseudo-class-hover" value="input[type='button']"/>
+                      </div>
+                    </td>
                   </tr>
                 
                   <tr class="kss-mod-desc-group">
@@ -109,9 +127,13 @@ So far this just includes buttons. </p>
                     <td class="kss-mod-name"><p>:disabled</p></td>
                   </tr>
                   <tr class="kss-mod-example">
-                    <td colspan="2"><a href="#" class="button pseudo-class-disabled">Link Button</a>
+                    <td colspan="2" data-name=".pseudo-class-disabled">
+                      <div class="kss-mod-example-content">
+                        <a href="#" class="button pseudo-class-disabled">Link Button</a>
 <button class="button pseudo-class-disabled">Button Element</button>
-<input type="button" class="button pseudo-class-disabled" value="input[type='button']"/></td>
+<input type="button" class="button pseudo-class-disabled" value="input[type='button']"/>
+                      </div>
+                    </td>
                   </tr>
                 
                   <tr class="kss-mod-desc-group">
@@ -120,9 +142,13 @@ So far this just includes buttons. </p>
                     <td class="kss-mod-name"><p>:active</p></td>
                   </tr>
                   <tr class="kss-mod-example">
-                    <td colspan="2"><a href="#" class="button pseudo-class-active">Link Button</a>
+                    <td colspan="2" data-name=".pseudo-class-active">
+                      <div class="kss-mod-example-content">
+                        <a href="#" class="button pseudo-class-active">Link Button</a>
 <button class="button pseudo-class-active">Button Element</button>
-<input type="button" class="button pseudo-class-active" value="input[type='button']"/></td>
+<input type="button" class="button pseudo-class-active" value="input[type='button']"/>
+                      </div>
+                    </td>
                   </tr>
                 
                 </table>
@@ -142,34 +168,15 @@ So far this just includes buttons. </p>
   <footer>
     <a href="http://github.com/hughsk/kss-node"><img id="kss-github" style="position: absolute; top: 0; right: 0; border: 0;" src="https://a248.e.akamai.net/assets.github.com/img/30f550e0d38ceb6ef5b81500c64d970b7fb0f028/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub"></a>
   </footer>
+  
   <!-- SCRIPTS -->
-  <script src="public/kss.js"></script>
-  <script src="public/prettify.js"></script>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script src="public/kss.js" data-dependency="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" id="main-script"></script>
   <script>
-    $(document).ready(function(){
-      var sidebarAdjust = function() {
-        // Match footer/body height
-        var height = Math.max($(window).height(), $('#kss-main').height());
-
-        if ($(window).width() <= 768) {
-          $('#kss-main, #kss-nav').height('auto');
-        } else {
-          $('#kss-main, #kss-nav').height(height);
-        }
-      };
-
-      $(window).resize(sidebarAdjust);
-      $(window).scroll(sidebarAdjust);
-      sidebarAdjust();
-
-      // Ensure code blocks are highlighted properly...
-      $('pre>code').addClass('prettyprint');
-      prettyPrint();
-
+    var KSS = KSS({
+      debug : true
     });
   </script>
-
+  
   
   
     <script type="text/javascript">

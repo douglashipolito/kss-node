@@ -1,5 +1,19 @@
 @import 'markdown';
 
+.hide {
+  display: none;
+}
+
+.js-kss-loaded .kss-mod-example-content {
+  &:extend(.hide);
+}
+
+.iframe-content {
+  overflow: hidden;
+  min-width: 100%;
+  width: 100%;
+}
+
 #kss-nav {
 	width:20%;
 	background-color:#eee;
