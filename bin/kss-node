@@ -271,20 +271,22 @@ processCssKssPreview = function(css) {
 
 	if(cssKssPreviewObj) {
 		cssKssPreviewObj.cssRules.forEach(function (cssRule) {
-			matchPseudo = cssRule.selectorText.match(pseudos);
-			
-			cssRuleSelector = cssRule.selectorText.replace(pseudos, '').split(',')[0];
+			if(cssRule.selectorText) {
+				matchPseudo = cssRule.selectorText.match(pseudos);
+				
+				cssRuleSelector = cssRule.selectorText.replace(pseudos, '').split(',')[0];
 
-			if (matchPseudo) {
+				if (matchPseudo) {
 
-				matchPseudo.forEach(function (selector, index) {
-					selector = selector.replace(/:/g, '');
+					matchPseudo.forEach(function (selector, index) {
+						selector = selector.replace(/:/g, '');
 
-					matchPseudo[index] = cssRuleSelector + '.pseudo-class-' + selector + ' { ' + cssRule.style.cssText + ' }';
-				});
+						matchPseudo[index] = cssRuleSelector + '.pseudo-class-' + selector + ' { ' + cssRule.style.cssText + ' }';
+					});
 
-      	cssKssPreviewObj.insertRule(matchPseudo.join(), cssKssPreviewObj.cssRules.length);
-      }
+	      	cssKssPreviewObj.insertRule(matchPseudo.join(), cssKssPreviewObj.cssRules.length);
+	      }
+	    }
 		});
 
 		cssKssPreview = cleanCss.process(cssKssPreviewObj.toString());
@@ -383,44 +385,44 @@ jsonModifiers = function(modifiers) {
 	});
 };
 
-// Remove unused css
+/**
+ * Remove all unused css
+ * @param  {Array}  				html  		HTML to verify unused css
+ * @param  {String|Array}   css      	CSS to parse
+ * @param  {Function} 			callback 	Callback for return the results
+ */
 removeUnusedCSS = function(html, css, callback) {
 	ucss.analyze({ include : html }, [css], { timeout : 400 }, false, function(result) {
 			var cssRules = cssKssPreviewObj.cssRules,
-					newCssString = '',
-					newCssObject = {},
-					prevSelector = '',
+					cssText = '',
+					cssSelectors = [],
 					cssObj = {},
-					posCss = {},
-					keyCss = '';
+					selectorText = '';
 
 	    for (selector in result.selectors) {
 	    	if(result.selectors[selector].matches_html) {
-	    		pos_css = result.selectors[selector].pos_css;
-          keyCss = Object.keys(pos_css)[0];
-
-	    		newCssObject[selector] = pos_css[keyCss];
-
-	    		if(prevSelector) {
-	    			if(newCssObject[prevSelector].join(',').indexOf(newCssObject[selector].join(',')) > -1) {
-	    				newCssObject[selector + ',' + prevSelector] = newCssObject[prevSelector];
-	    			}
-	    			
-	    		}
-
-	    		prevSelector = selector;
+	    		cssSelectors.push(selector);
 	    	}
 	    }
 
 	    for (cssRule in cssRules) {
 				cssObj = cssRules[cssRule];
+				
+				if(!cssObj.selectorText) {
+					continue;
+				}
 
-				if(newCssObject[cssObj.selectorText]) {
-					newCssString += cssObj.cssText;
+				selectorText = cssObj.selectorText.split(',');
+				
+				for(indexSelector in cssSelectors) {
+					if(selectorText.indexOf(cssSelectors[indexSelector]) > -1) {
+						cssText += cssObj.cssText;
+						break;
+					}
 				}
 	    }
 
-	    callback(newCssString);
+	    callback(cssText);
 	});
 }
 
